@@ -1,6 +1,6 @@
 # discourse-media-events
 
-* This component adds event tracking for posts in a topic containing `<video>` or `<audio>` tags.
+* This component adds event tracking for `<video>` and `<audio>` tags in posts via `api.decorateCookedElement`.
 * The events tracked are:
   * [play](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/play_event)
   * [pause](https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement/pause_event)
