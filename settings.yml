@@ -1,0 +1,3 @@
+timeupdate_event_frequency:
+  default: 0
+  description: "Frequency of triggering an app event during playback. Set to 0 seconds to disable."

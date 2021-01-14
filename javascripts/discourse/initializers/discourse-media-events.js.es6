@@ -7,8 +7,8 @@ export default {
   initialize(container) {
     const appEvents = container.lookup("service:app-events");
 
-    withPluginApi("0.8.31", api => {
-      let tracker = new MediaEventTracker(appEvents);
+    withPluginApi("0.8.31", (api) => {
+      const tracker = new MediaEventTracker(appEvents, settings);
 
       api.decorateCookedElement(
         ($elem, helper) => {
@@ -16,9 +16,9 @@ export default {
         },
         {
           onlyStream: true,
-          id: "discourse-media-events"
+          id: "discourse-media-events",
         }
       );
     });
-  }
+  },
 };
