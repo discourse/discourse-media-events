@@ -10,11 +10,11 @@ export default class MediaEventTracker {
     const videoElements = postElement.querySelectorAll("video");
     const audioElements = postElement.querySelectorAll("audio");
 
-    videoElements.forEach(this._bindMediaEvents.bind(this));
-    audioElements.forEach(this._bindMediaEvents.bind(this));
+    videoElements.forEach(this.bindMediaEvents.bind(this));
+    audioElements.forEach(this.bindMediaEvents.bind(this));
   }
 
-  _bindMediaEvents(mediaElement) {
+  bindMediaEvents(mediaElement) {
     TRACKED_EVENTS.forEach((eventType) => {
       mediaElement.addEventListener(eventType, (event) => {
         this._updateLastTime(event.target);
