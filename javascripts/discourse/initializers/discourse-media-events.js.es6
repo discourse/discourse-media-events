@@ -21,7 +21,7 @@ export default {
       );
       appEvents.on("discourse-media:start-tracking-video", (videoElement) => {
         tracker.bindMediaEvents(videoElement);
-      })
+      });
     });
   },
 };
