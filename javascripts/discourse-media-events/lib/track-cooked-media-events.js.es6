@@ -1,4 +1,12 @@
-const TRACKED_EVENTS = ["play", "pause", "ended"];
+const TRACKED_EVENTS = [
+  "play",
+  "pause",
+  "ended",
+  "seeked",
+  "enterpictureinpicture",
+  "leavepictureinpicture",
+  "fullscreenchange",
+];
 
 export default class MediaEventTracker {
   constructor(appEvents) {
@@ -18,23 +26,39 @@ export default class MediaEventTracker {
     TRACKED_EVENTS.forEach((eventType) => {
       mediaElement.addEventListener(eventType, (event) => {
         this._updateLastTime(event.target);
-        this._triggerAppEvent(event);
+        this._triggerAppEvent(event, event.target);
       });
     });
 
     if (this._timeupdateFrequency > 0) {
       mediaElement.addEventListener("timeupdate", (event) =>
-        this._handleTimeUpdateEvent(event)
+        this._handleTimeUpdateEvent(event, event.target)
       );
     }
   }
 
-  _triggerAppEvent(event) {
-    const tagName = event.target.tagName.toLowerCase();
-    const eventType = event.type.toLowerCase();
-    const data = this._extractEventData(event.target);
+  bindVideojsEvents(video) {
+    const videoTag = video.el().querySelector("video");
+    TRACKED_EVENTS.forEach((eventType) => {
+      video.on(eventType, (event) => {
+        this._updateLastTime(videoTag);
+        this._triggerAppEvent(event, videoTag);
+      });
+    });
 
-    if (eventType === "pause" && event.target.ended) {
+    if (this._timeupdateFrequency > 0) {
+      video.on("timeupdate", (event) =>
+        this._handleTimeUpdateEvent(event, videoTag)
+      );
+    }
+  }
+
+  _triggerAppEvent(event, target) {
+    const tagName = target.tagName.toLowerCase();
+    const eventType = event.type.toLowerCase();
+    const data = this._extractEventData(target);
+
+    if (eventType === "pause" && target.ended) {
       return;
     }
 
@@ -63,14 +87,13 @@ export default class MediaEventTracker {
     return { filename, src, currentTime, postId, topicId };
   }
 
-  _handleTimeUpdateEvent(event) {
-    const mediaElement = event.target;
-    const lastTime = Number(mediaElement.dataset.lastTime) || 0;
-    const currentTime = mediaElement.currentTime;
+  _handleTimeUpdateEvent(event, target) {
+    const lastTime = Number(target.dataset.lastTime) || 0;
+    const currentTime = target.currentTime;
 
     if (Math.abs(currentTime - lastTime) >= this._timeupdateFrequency) {
-      this._updateLastTime(mediaElement);
-      this._triggerAppEvent(event);
+      this._updateLastTime(target);
+      this._triggerAppEvent(event, target);
     }
   }
 
