@@ -39,6 +39,7 @@ export default class MediaEventTracker {
 
   bindVideojsEvents(video) {
     const videoTag = video.el().querySelector("video");
+
     TRACKED_EVENTS.forEach((eventType) => {
       video.on(eventType, (event) => {
         this._updateLastTime(videoTag);
@@ -48,7 +49,7 @@ export default class MediaEventTracker {
 
     if (this._timeupdateFrequency > 0) {
       video.on("timeupdate", (event) =>
-        this._handleTimeUpdateEvent(event, videoTag)
+        this._handleTimeUpdateEvent(event, videoTag, video.currentTime())
       );
     }
   }
@@ -87,9 +88,8 @@ export default class MediaEventTracker {
     return { filename, src, currentTime, postId, topicId };
   }
 
-  _handleTimeUpdateEvent(event, target) {
+  _handleTimeUpdateEvent(event, target, currentTime) {
     const lastTime = Number(target.dataset.lastTime) || 0;
-    const currentTime = target.currentTime;
 
     if (Math.abs(currentTime - lastTime) >= this._timeupdateFrequency) {
       this._updateLastTime(target);
