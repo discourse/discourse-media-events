@@ -48,9 +48,9 @@ export default class MediaEventTracker {
     });
 
     if (this._timeupdateFrequency > 0) {
-      video.on("timeupdate", (event) => {
-        this._handleTimeUpdateEvent(event, videoTag, video.currentTime());
-      });
+      video.on("timeupdate", (event) =>
+        this._handleTimeUpdateEvent(event, videoTag, video.currentTime())
+      );
     }
   }
 
