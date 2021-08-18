@@ -1,0 +1,10 @@
+{
+  "name": "discourse-media-events",
+  "version": "1.0.0",
+  "repository": "https://github.com/discourse/discourse-media-events",
+  "author": "Discourse",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint-config-discourse": "^1.1.8"
+  }
+}
