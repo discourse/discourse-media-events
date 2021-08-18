@@ -11,7 +11,7 @@ export default {
       const tracker = new MediaEventTracker(appEvents, settings);
 
       api.decorateCookedElement(
-        ($elem, helper) => {
+        ($elem) => {
           tracker.startTrackingForPost($elem);
         },
         {
