@@ -62,7 +62,7 @@ export default class MediaEventTracker {
       ? this._extractEventDataVideojs(target)
       : this._extractEventData(target);
 
-    if (eventType === "pause" && target.ended) {
+    if (eventType === "pause" && target.ended()) {
       return;
     }
 
