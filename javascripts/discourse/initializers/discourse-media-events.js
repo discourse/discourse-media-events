@@ -1,5 +1,5 @@
 import { withPluginApi } from "discourse/lib/plugin-api";
-import MediaEventTracker from "../discourse-media-events/lib/track-cooked-media-events";
+import MediaEventTracker from "../../discourse-media-events/lib/track-cooked-media-events";
 
 export default {
   name: "discourse-media-events",
