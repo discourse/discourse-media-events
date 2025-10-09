@@ -7,7 +7,7 @@ export default {
   initialize(container) {
     const appEvents = container.lookup("service:app-events");
 
-    withPluginApi("0.8.31", (api) => {
+    withPluginApi((api) => {
       const tracker = new MediaEventTracker(appEvents, settings);
 
       api.decorateCookedElement(
