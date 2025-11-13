@@ -39,8 +39,10 @@ module("discourse-media-events | Unit | Lib | MediaEventTracker", function () {
     test("extracts filename, src, currentTime, postId, and topicId from Video.js player", function (assert) {
       const tracker = new MediaEventTracker({});
 
-      const topicElement = document.createElement("section");
+      const topicElement = document.createElement("div");
+      topicElement.id = "topic";
       topicElement.dataset.topicId = "789";
+      document.body.appendChild(topicElement);
 
       const postElement = document.createElement("article");
       postElement.dataset.postId = "101";
