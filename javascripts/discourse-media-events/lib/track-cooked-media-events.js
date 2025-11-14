@@ -59,10 +59,14 @@ export default class MediaEventTracker {
     const eventType = event.type.toLowerCase();
     const tagName = videojs ? "video" : target.tagName.toLowerCase();
     const data = videojs
-      ? this._extractEventDataVideojs(target.video)
+      ? this._extractEventDataVideojs(target)
       : this._extractEventData(target);
 
-    if (eventType === "pause" && (videojs ? target.ended() : target.ended)) {
+    if (
+      !data.topicId ||
+      !data.postId ||
+      (eventType === "pause" && (videojs ? target.ended() : target.ended))
+    ) {
       return;
     }
 
@@ -87,7 +91,7 @@ export default class MediaEventTracker {
     const filename = src.substring(src.lastIndexOf("/") + 1);
     const currentTime = video.currentTime();
     const postElement = video.el().closest("article");
-    const topicElement = video.el().closest("section");
+    const topicElement = document.getElementById("topic");
 
     let postId = Number(postElement?.dataset?.postId || 0);
     let topicId = Number(topicElement?.dataset?.topicId || 0);
