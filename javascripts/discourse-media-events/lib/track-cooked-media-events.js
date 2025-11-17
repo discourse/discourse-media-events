@@ -22,6 +22,10 @@ export default class MediaEventTracker {
   bindMediaEvents(mediaElement) {
     TRACKED_EVENTS.forEach((eventType) => {
       mediaElement.addEventListener(eventType, (event) => {
+        // Check at event-fire time if videojs has enhanced this video
+        if (event.target.classList.contains("vjs-tech")) {
+          return;
+        }
         this._updateLastTime(event.target, mediaElement.currentTime);
         this._triggerAppEvent(event, event.target);
       });
@@ -40,6 +44,12 @@ export default class MediaEventTracker {
 
   bindVideojsEvents(video) {
     const videoTag = video.el().querySelector("video");
+
+    // Prevent duplicate bindings - check if we've already bound to this video
+    if (videoTag.dataset.videojsEventsbound) {
+      return;
+    }
+    videoTag.dataset.videojsEventsbound = "true";
 
     TRACKED_EVENTS.forEach((eventType) => {
       video.on(eventType, (event) => {
@@ -78,10 +88,10 @@ export default class MediaEventTracker {
     const filename = src.substring(src.lastIndexOf("/") + 1);
     const currentTime = mediaElement.currentTime;
     const postElement = mediaElement.closest("article");
-    const topicElement = mediaElement.closest("section");
+    const topicElement = document.getElementById("topic");
 
-    let postId = Number(postElement?.dataset?.postId || 0);
-    let topicId = Number(topicElement?.dataset?.topicId || 0);
+    const postId = Number(postElement?.dataset?.postId || 0);
+    const topicId = Number(topicElement?.dataset?.topicId || 0);
 
     return { filename, src, currentTime, postId, topicId };
   }
@@ -93,13 +103,18 @@ export default class MediaEventTracker {
     const postElement = video.el().closest("article");
     const topicElement = document.getElementById("topic");
 
-    let postId = Number(postElement?.dataset?.postId || 0);
-    let topicId = Number(topicElement?.dataset?.topicId || 0);
+    const postId = Number(postElement?.dataset?.postId || 0);
+    const topicId = Number(topicElement?.dataset?.topicId || 0);
 
     return { filename, src, currentTime, postId, topicId };
   }
 
   _handleTimeUpdateEvent(event, target, currentTime) {
+    // Skip if videojs has enhanced this video
+    if (target.classList.contains("vjs-tech")) {
+      return;
+    }
+
     const lastTime = Number(target.dataset.lastTime) || 0;
 
     if (Math.abs(currentTime - lastTime) >= this._timeupdateFrequency) {
