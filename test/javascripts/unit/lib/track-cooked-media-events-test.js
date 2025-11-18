@@ -6,8 +6,10 @@ module("discourse-media-events | Unit | Lib | MediaEventTracker", function () {
     test("extracts filename, src, currentTime, postId, and topicId from media element", function (assert) {
       const tracker = new MediaEventTracker({});
 
-      const topicElement = document.createElement("section");
+      const topicElement = document.createElement("div");
+      topicElement.id = "topic";
       topicElement.dataset.topicId = "123";
+      document.body.appendChild(topicElement);
 
       const postElement = document.createElement("article");
       postElement.dataset.postId = "456";
@@ -32,6 +34,9 @@ module("discourse-media-events | Unit | Lib | MediaEventTracker", function () {
       assert.strictEqual(result.currentTime, 42.5);
       assert.strictEqual(result.postId, 456);
       assert.strictEqual(result.topicId, 123);
+
+      // Cleanup
+      document.body.removeChild(topicElement);
     });
   });
 
@@ -68,6 +73,121 @@ module("discourse-media-events | Unit | Lib | MediaEventTracker", function () {
       assert.strictEqual(result.currentTime, 120.75);
       assert.strictEqual(result.postId, 101);
       assert.strictEqual(result.topicId, 789);
+
+      // Cleanup
+      document.body.removeChild(topicElement);
+    });
+  });
+
+  module("bindMediaEvents", function () {
+    test("skips videojs-enhanced videos with vjs-tech class", function (assert) {
+      const mockAppEvents = { trigger: () => {} };
+      const tracker = new MediaEventTracker(mockAppEvents);
+
+      const videoElement = document.createElement("video");
+      videoElement.classList.add("vjs-tech");
+      Object.defineProperty(videoElement, "currentSrc", {
+        value: "https://example.com/video.mp4",
+        writable: false,
+      });
+      Object.defineProperty(videoElement, "currentTime", {
+        value: 0,
+        writable: false,
+      });
+
+      let eventFired = false;
+      tracker._triggerAppEvent = () => {
+        eventFired = true;
+      };
+
+      tracker.bindMediaEvents(videoElement);
+
+      // Simulate a play event
+      const playEvent = new Event("play");
+      Object.defineProperty(playEvent, "target", {
+        value: videoElement,
+        writable: false,
+      });
+      videoElement.dispatchEvent(playEvent);
+
+      assert.false(
+        eventFired,
+        "should not trigger app event for videojs-enhanced video"
+      );
+    });
+
+    test("tracks regular videos without vjs-tech class", function (assert) {
+      const mockAppEvents = { trigger: () => {} };
+      const tracker = new MediaEventTracker(mockAppEvents);
+
+      const videoElement = document.createElement("video");
+      Object.defineProperty(videoElement, "currentSrc", {
+        value: "https://example.com/video.mp4",
+        writable: false,
+      });
+      Object.defineProperty(videoElement, "currentTime", {
+        value: 0,
+        writable: false,
+      });
+
+      let eventFired = false;
+      tracker._triggerAppEvent = () => {
+        eventFired = true;
+      };
+
+      tracker.bindMediaEvents(videoElement);
+
+      // Simulate a play event
+      const playEvent = new Event("play");
+      Object.defineProperty(playEvent, "target", {
+        value: videoElement,
+        writable: false,
+      });
+      videoElement.dispatchEvent(playEvent);
+
+      assert.true(eventFired, "should trigger app event for regular video");
+    });
+  });
+
+  module("bindVideojsEvents", function () {
+    test("prevents duplicate bindings to the same videojs player", function (assert) {
+      const mockAppEvents = { trigger: () => {} };
+      const tracker = new MediaEventTracker(mockAppEvents);
+
+      const videoTag = document.createElement("video");
+      videoTag.classList.add("vjs-tech");
+      videoTag.id = "test-video";
+
+      const videoContainer = document.createElement("div");
+      videoContainer.appendChild(videoTag);
+
+      const mockVideojsPlayer = {
+        currentSrc: () => "https://example.com/video.mp4",
+        currentTime: () => 0,
+        el: () => videoContainer,
+        on: () => {},
+      };
+
+      // First binding
+      tracker.bindVideojsEvents(mockVideojsPlayer);
+      assert.strictEqual(
+        videoTag.dataset.videojsEventsbound,
+        "true",
+        "should mark video as bound"
+      );
+
+      // Attempt second binding
+      let bindingAttempted = false;
+      mockVideojsPlayer.on = () => {
+        bindingAttempted = true;
+      };
+
+      tracker.bindVideojsEvents(mockVideojsPlayer);
+
+      assert.false(
+        bindingAttempted,
+        "should not attempt to bind events a second time"
+      );
     });
   });
 });
