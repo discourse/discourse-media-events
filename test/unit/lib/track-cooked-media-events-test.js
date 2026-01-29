@@ -1,5 +1,5 @@
 import { module, test } from "qunit";
-import MediaEventTracker from "../../../../discourse-media-events/lib/track-cooked-media-events";
+import MediaEventTracker from "../../../discourse/lib/track-cooked-media-events";
 
 module("discourse-media-events | Unit | Lib | MediaEventTracker", function () {
   module("_extractEventData", function () {
