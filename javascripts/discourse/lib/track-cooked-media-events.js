@@ -68,7 +68,7 @@ export default class MediaEventTracker {
   _triggerAppEvent(event, target, videojs = false) {
     const eventType = event.type.toLowerCase();
     const tagName = videojs ? "video" : target.tagName.toLowerCase();
-    const mediaElement = videojs ? target.el().querySelector("video") : target;
+    const mediaElement = videojs ? target.el()?.querySelector("video") : target;
 
     // A host app can take playback off the page and report its own events for
     // the same media. It marks the element while it owns playback, and pauses
