@@ -149,6 +149,74 @@ module("discourse-media-events | Unit | Lib | MediaEventTracker", function () {
     });
   });
 
+  module("_triggerAppEvent", function () {
+    function trackedMedia(tracker) {
+      const topicElement = document.createElement("div");
+      topicElement.id = "topic";
+      topicElement.dataset.topicId = "123";
+      document.body.appendChild(topicElement);
+
+      const postElement = document.createElement("article");
+      postElement.dataset.postId = "456";
+      topicElement.appendChild(postElement);
+
+      const mediaElement = document.createElement("video");
+      Object.defineProperty(mediaElement, "currentSrc", {
+        value: "https://example.com/video.mp4",
+      });
+      Object.defineProperty(mediaElement, "currentTime", { value: 0 });
+      postElement.appendChild(mediaElement);
+
+      tracker.bindMediaEvents(mediaElement);
+
+      return { mediaElement, cleanup: () => topicElement.remove() };
+    }
+
+    test("skips media a host app has taken over", function (assert) {
+      const triggered = [];
+      const tracker = new MediaEventTracker({
+        trigger: (name) => triggered.push(name),
+      });
+      const { mediaElement, cleanup } = trackedMedia(tracker);
+
+      mediaElement.dispatchEvent(new Event("play"));
+
+      // The host app marks the element, then pauses the page copy to hand off.
+      mediaElement.dataset.nativeMediaState = "handoff";
+      mediaElement.dispatchEvent(new Event("pause"));
+
+      assert.deepEqual(
+        triggered,
+        ["discourse-media:video:play"],
+        "reports the play but not the pause that performed the handoff"
+      );
+
+      cleanup();
+    });
+
+    test("resumes reporting once the host app releases the media", function (assert) {
+      const triggered = [];
+      const tracker = new MediaEventTracker({
+        trigger: (name) => triggered.push(name),
+      });
+      const { mediaElement, cleanup } = trackedMedia(tracker);
+
+      mediaElement.dataset.nativeMediaState = "playing";
+      mediaElement.dispatchEvent(new Event("pause"));
+
+      delete mediaElement.dataset.nativeMediaState;
+      mediaElement.dispatchEvent(new Event("play"));
+
+      assert.deepEqual(
+        triggered,
+        ["discourse-media:video:play"],
+        "ignores events while handed off and reports them again afterwards"
+      );
+
+      cleanup();
+    });
+  });
+
   module("bindVideojsEvents", function () {
     test("prevents duplicate bindings to the same videojs player", function (assert) {
       const mockAppEvents = { trigger: () => {} };
